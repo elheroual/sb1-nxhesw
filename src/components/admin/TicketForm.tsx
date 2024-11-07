@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Ticket, User, Priority, TicketStatus } from '../../types';
-import { Calendar, Clock, MapPin, Tag, Users } from 'lucide-react';
+import { Ticket, User, Priority, TicketStatus, ProductType } from '../../types';
+import { Calendar, Clock, MapPin, Tag, Users, Router } from 'lucide-react';
 
 interface TicketFormProps {
   ticket?: Ticket;
@@ -23,6 +23,7 @@ export const TicketForm: React.FC<TicketFormProps> = ({
       technician: '',
       priority: 'Medium',
       status: 'Open',
+      productType: 'Fixe',
       dueDate: new Date().toISOString().split('T')[0],
       estimatedHours: 1,
     }
@@ -58,6 +59,23 @@ export const TicketForm: React.FC<TicketFormProps> = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Product Type</label>
+          <div className="mt-1 relative">
+            <Router className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            <select
+              required
+              className="block w-full pl-10 rounded-md border border-gray-300 px-3 py-2"
+              value={formData.productType}
+              onChange={(e) => setFormData({ ...formData, productType: e.target.value as ProductType })}
+            >
+              <option value="Fixe">Fixe</option>
+              <option value="ADSL">ADSL</option>
+              <option value="GPON">GPON</option>
+            </select>
+          </div>
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700">Location</label>
           <div className="mt-1 relative">

@@ -2,6 +2,7 @@ export type TicketStatus = 'Open' | 'In Progress' | 'On Hold' | 'Completed';
 export type UserRole = 'admin' | 'technician';
 export type Priority = 'Low' | 'Medium' | 'High';
 export type NotificationType = 'deadline' | 'urgent' | 'assignment' | 'status';
+export type ProductType = 'Fixe' | 'ADSL' | 'GPON';
 
 export interface User {
   id: string;
@@ -22,6 +23,7 @@ export interface Ticket {
   technician: string;
   status: TicketStatus;
   priority: Priority;
+  productType: ProductType;
   createdAt: string;
   updatedAt: string;
   dueDate: string;
@@ -52,6 +54,7 @@ export interface TicketStats {
   total: number;
   byStatus: Record<TicketStatus, number>;
   byPriority: Record<Priority, number>;
+  byProductType: Record<ProductType, number>;
   overdue: number;
   dueToday: number;
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Ticket, User } from '../../types';
-import { Edit2, Trash2, AlertCircle } from 'lucide-react';
+import { Edit2, Trash2, AlertCircle, Router } from 'lucide-react';
 
 interface TicketTableProps {
   tickets: Ticket[];
@@ -18,6 +18,7 @@ export const TicketTable: React.FC<TicketTableProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [productTypeFilter, setProductTypeFilter] = useState('all');
 
   const filteredTickets = tickets.filter((ticket) => {
     const matchesSearch = 
@@ -27,8 +28,9 @@ export const TicketTable: React.FC<TicketTableProps> = ({
     
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
+    const matchesProductType = productTypeFilter === 'all' || ticket.productType === productTypeFilter;
 
-    return matchesSearch && matchesStatus && matchesPriority;
+    return matchesSearch && matchesStatus && matchesPriority && matchesProductType;
   });
 
   const handleDeleteClick = (ticket: Ticket) => {
@@ -68,6 +70,16 @@ export const TicketTable: React.FC<TicketTableProps> = ({
           <option value="Medium">Medium</option>
           <option value="High">High</option>
         </select>
+        <select
+          className="rounded-md border border-gray-300 px-4 py-2"
+          value={productTypeFilter}
+          onChange={(e) => setProductTypeFilter(e.target.value)}
+        >
+          <option value="all">All Products</option>
+          <option value="Fixe">Fixe</option>
+          <option value="ADSL">ADSL</option>
+          <option value="GPON">GPON</option>
+        </select>
       </div>
 
       <div className="overflow-x-auto">
@@ -76,6 +88,9 @@ export const TicketTable: React.FC<TicketTableProps> = ({
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Ticket
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Product Type
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -102,6 +117,12 @@ export const TicketTable: React.FC<TicketTableProps> = ({
                     <span className="font-medium text-gray-900">{ticket.title}</span>
                     <span className="text-sm text-gray-500">{ticket.location}</span>
                   </div>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <Router className="w-4 h-4 mr-1" />
+                    {ticket.productType}
+                  </span>
                 </td>
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium
