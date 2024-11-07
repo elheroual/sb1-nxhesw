@@ -70,32 +70,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         isMenuOpen={isMobileMenuOpen}
       />
 
-      <div className="pt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 animate-fade-in">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4 md:mb-0">Admin Dashboard</h1>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
-              <NotificationCenter
-                notifications={notifications}
-                onMarkAsRead={onNotificationRead}
-              />
-              <button
-                onClick={() => setShowTicketForm(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                New Ticket
-              </button>
-              <button
-                onClick={handleSignOut}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-all duration-200"
-              >
-                <LogOut className="h-5 w-5 mr-2" />
-                Sign Out
-              </button>
-            </div>
-          </div>
+      {/* Action buttons container */}
+      <div className="fixed top-16 right-4 z-40 flex flex-col sm:flex-row gap-2 p-4">
+        <NotificationCenter
+          notifications={notifications}
+          onMarkAsRead={onNotificationRead}
+        />
+        <button
+          onClick={() => setShowTicketForm(true)}
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          New Ticket
+        </button>
+        <button
+          onClick={handleSignOut}
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-all duration-200"
+        >
+          <LogOut className="h-5 w-5 mr-2" />
+          Sign Out
+        </button>
+      </div>
 
+      <div className="pt-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="space-y-8 animate-fade-in">
             <AdminStats tickets={tickets} technicians={technicians} />
 
