@@ -27,6 +27,8 @@ const translations = {
     'due.today': 'À faire aujourd\'hui',
     'overdue': 'En retard',
     'completed': 'Terminés',
+    'welcome': 'Bienvenue',
+    'assigned.tickets': 'Tickets Assignés',
     
     // Ticket Form
     'ticket.title': 'Titre',
@@ -85,6 +87,8 @@ const translations = {
     'due.today': 'Due Today',
     'overdue': 'Overdue',
     'completed': 'Completed',
+    'welcome': 'Welcome',
+    'assigned.tickets': 'Assigned Tickets',
     
     // Ticket Form
     'ticket.title': 'Title',
