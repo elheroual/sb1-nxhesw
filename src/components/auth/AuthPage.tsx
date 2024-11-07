@@ -4,7 +4,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../lib/firebase';
 import { User, Lock } from 'lucide-react';
 import { Header } from '../Header';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../lib/contexts/LanguageContext';
 
 export const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);

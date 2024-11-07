@@ -1,6 +1,6 @@
 import React from 'react';
 import { ClipboardList, Menu, X } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../lib/contexts/LanguageContext';
 import { LanguageToggle } from './LanguageToggle';
 
 interface HeaderProps {

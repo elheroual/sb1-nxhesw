@@ -5,7 +5,7 @@ import { TicketList } from '../TicketList';
 import { Ticket, TicketStatus, User } from '../../types';
 import { LogOut } from 'lucide-react';
 import { TechnicianStats } from './TechnicianStats';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../lib/contexts/LanguageContext';
 import { Header } from '../Header';
 
 interface TechnicianDashboardProps {

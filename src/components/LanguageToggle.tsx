@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../lib/contexts/LanguageContext';
 import { Languages } from 'lucide-react';
 
 export const LanguageToggle: React.FC = () => {

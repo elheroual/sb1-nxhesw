@@ -10,7 +10,7 @@ import { Ticket, User, AuditLog, Notification, TicketStats } from '../../types';
 import { Plus, LogOut } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../lib/contexts/LanguageContext';
 
 interface AdminDashboardProps {
   tickets: Ticket[];
