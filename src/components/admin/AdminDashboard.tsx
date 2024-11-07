@@ -10,6 +10,7 @@ import { Ticket, User, AuditLog, Notification, TicketStats } from '../../types';
 import { Plus, LogOut } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface AdminDashboardProps {
   tickets: Ticket[];
@@ -39,6 +40,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [showTicketForm, setShowTicketForm] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   const handleTicketSubmit = (ticketData: Partial<Ticket>) => {
     if (selectedTicket) {
@@ -70,7 +72,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         isMenuOpen={isMobileMenuOpen}
       />
 
-      {/* Action buttons container */}
       <div className="fixed top-16 right-4 z-40 flex flex-col sm:flex-row gap-2 p-4">
         <NotificationCenter
           notifications={notifications}
@@ -81,14 +82,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
         >
           <Plus className="h-5 w-5 mr-2" />
-          New Ticket
+          {t('new.ticket')}
         </button>
         <button
           onClick={handleSignOut}
           className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-all duration-200"
         >
           <LogOut className="h-5 w-5 mr-2" />
-          Sign Out
+          {t('sign.out')}
         </button>
       </div>
 
@@ -99,7 +100,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <div className="bg-white/80 backdrop-blur-lg rounded-lg shadow-lg">
               <div className="p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Tickets</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">{t('tickets.management')}</h2>
                 <TicketTable
                   tickets={tickets}
                   onEdit={handleEditClick}
@@ -114,13 +115,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       </div>
 
-      {/* Modal */}
       {showTicketForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white/90 backdrop-blur-lg animate-scale-in">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">
-                {selectedTicket ? 'Edit Ticket' : 'Create New Ticket'}
+                {t(selectedTicket ? 'ticket.update' : 'ticket.create')}
               </h2>
               <button
                 onClick={() => {

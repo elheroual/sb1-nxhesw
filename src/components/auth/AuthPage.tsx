@@ -4,6 +4,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../lib/firebase';
 import { User, Lock } from 'lucide-react';
 import { Header } from '../Header';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,6 +12,7 @@ export const AuthPage = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +64,7 @@ export const AuthPage = () => {
           </div>
           
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">
-            {isLogin ? 'Welcome Back!' : 'Create Account'}
+            {t(isLogin ? 'welcome.back' : 'create.account')}
           </h2>
 
           {error && (
@@ -74,7 +76,7 @@ export const AuthPage = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
               <div className="group">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('name')}</label>
                 <input
                   type="text"
                   required
@@ -86,7 +88,7 @@ export const AuthPage = () => {
             )}
 
             <div className="group">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('email')}</label>
               <input
                 type="email"
                 required
@@ -97,7 +99,7 @@ export const AuthPage = () => {
             </div>
 
             <div className="group">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('password')}</label>
               <input
                 type="password"
                 required
@@ -111,7 +113,7 @@ export const AuthPage = () => {
               type="submit"
               className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105"
             >
-              {isLogin ? 'Sign In' : 'Sign Up'}
+              {t(isLogin ? 'sign.in' : 'sign.up')}
             </button>
           </form>
 
@@ -120,7 +122,7 @@ export const AuthPage = () => {
               onClick={() => setIsLogin(!isLogin)}
               className="text-sm text-blue-600 hover:text-blue-500 transition-colors"
             >
-              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+              {isLogin ? t('create.account') : t('welcome.back')}
             </button>
           </div>
         </div>

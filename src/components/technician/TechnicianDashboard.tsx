@@ -5,6 +5,7 @@ import { TicketList } from '../TicketList';
 import { Ticket, TicketStatus, User } from '../../types';
 import { LogOut, User as UserIcon } from 'lucide-react';
 import { TechnicianStats } from './TechnicianStats';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface TechnicianDashboardProps {
   technician: User;
@@ -17,6 +18,8 @@ export const TechnicianDashboard: React.FC<TechnicianDashboardProps> = ({
   tickets,
   onStatusChange,
 }) => {
+  const { t } = useLanguage();
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -30,7 +33,7 @@ export const TechnicianDashboard: React.FC<TechnicianDashboardProps> = ({
   const handleTicketStatusChange = (id: string, status: TicketStatus) => {
     const ticket = assignedTickets.find(t => t.id === id);
     if (ticket?.status === 'Completed') {
-      return; // Prevent changing status if already completed
+      return;
     }
     onStatusChange(id, status);
   };
@@ -43,7 +46,7 @@ export const TechnicianDashboard: React.FC<TechnicianDashboardProps> = ({
             <div className="flex items-center">
               <UserIcon className="h-8 w-8 text-blue-600 mr-3" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Technician Dashboard</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('tickets.management')}</h1>
                 <p className="text-gray-600">Welcome, {technician.name}</p>
               </div>
             </div>
@@ -52,7 +55,7 @@ export const TechnicianDashboard: React.FC<TechnicianDashboardProps> = ({
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
               <LogOut className="h-5 w-5 mr-2" />
-              Sign Out
+              {t('sign.out')}
             </button>
           </div>
         </div>
@@ -62,7 +65,7 @@ export const TechnicianDashboard: React.FC<TechnicianDashboardProps> = ({
         <TechnicianStats tickets={tickets} technicianName={technician.name} />
         
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Your Assigned Tickets</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">{t('tickets.management')}</h2>
           <TicketList
             tickets={assignedTickets}
             onStatusChange={handleTicketStatusChange}
