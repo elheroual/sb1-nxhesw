@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { AdminDashboard } from './components/admin/AdminDashboard';
-import { mockUsers } from './data';
-import { Ticket, AuditLog, Notification, TicketStats } from './types';
-import { db } from './lib/firebase';
+import { TechnicianDashboard } from './components/technician/TechnicianDashboard';
+import { AuthPage } from './components/auth/AuthPage';
+import { Ticket, AuditLog, Notification, TicketStats, User } from './types';
+import { auth, db } from './lib/firebase';
 import { 
   collection, 
   query, 
@@ -12,17 +13,36 @@ import {
   deleteDoc, 
   doc,
   serverTimestamp,
-  Timestamp
+  getDoc
 } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 function App() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isAdmin] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Subscribe to tickets collection
+    const unsubAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+        if (userDoc.exists()) {
+          setUser({ id: firebaseUser.uid, ...userDoc.data() } as User);
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubAuth();
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
     const unsubTickets = onSnapshot(
       collection(db, 'tickets'),
       (snapshot) => {
@@ -36,7 +56,6 @@ function App() {
       }
     );
 
-    // Subscribe to audit logs collection
     const unsubAuditLogs = onSnapshot(
       collection(db, 'auditLogs'),
       (snapshot) => {
@@ -49,7 +68,6 @@ function App() {
       }
     );
 
-    // Subscribe to notifications collection
     const unsubNotifications = onSnapshot(
       collection(db, 'notifications'),
       (snapshot) => {
@@ -67,7 +85,7 @@ function App() {
       unsubAuditLogs();
       unsubNotifications();
     };
-  }, []);
+  }, [user]);
 
   const calculateStats = (): TicketStats => {
     const today = new Date().toISOString().split('T')[0];
@@ -94,7 +112,7 @@ function App() {
     await addDoc(collection(db, 'auditLogs'), {
       ticketId,
       action,
-      userId: 'U1004',
+      userId: user?.id,
       timestamp: serverTimestamp(),
       details,
     });
@@ -146,43 +164,48 @@ function App() {
     await updateDoc(notifRef, { isRead: true });
   };
 
-  useEffect(() => {
-    const checkDeadlines = () => {
-      const today = new Date().toISOString().split('T')[0];
-      tickets.forEach(async (ticket) => {
-        if (ticket.dueDate === today && ticket.status !== 'Completed') {
-          await addNotification('deadline', `Ticket "${ticket.title}" is due today`, ticket.id);
-        }
-        if (ticket.dueDate < today && ticket.status !== 'Completed') {
-          await addNotification('urgent', `Ticket "${ticket.title}" is overdue`, ticket.id);
-        }
-      });
-    };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
-    checkDeadlines();
-    const interval = setInterval(checkDeadlines, 1000 * 60 * 60);
-    return () => clearInterval(interval);
-  }, [tickets]);
+  if (!user) {
+    return <AuthPage />;
+  }
 
-  if (!isAdmin) {
-    return <div>Access Denied</div>;
+  if (user.role === 'admin') {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <AdminDashboard
+          tickets={tickets}
+          technicians={[user]}
+          auditLogs={auditLogs}
+          notifications={notifications}
+          stats={calculateStats()}
+          onTicketCreate={handleTicketCreate}
+          onTicketUpdate={handleTicketUpdate}
+          onTicketDelete={handleTicketDelete}
+          onTicketAssign={handleTicketAssign}
+          onNotificationRead={handleNotificationRead}
+        />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <AdminDashboard
-        tickets={tickets}
-        technicians={mockUsers.filter(user => user.role === 'technician')}
-        auditLogs={auditLogs}
-        notifications={notifications}
-        stats={calculateStats()}
-        onTicketCreate={handleTicketCreate}
-        onTicketUpdate={handleTicketUpdate}
-        onTicketDelete={handleTicketDelete}
-        onTicketAssign={handleTicketAssign}
-        onNotificationRead={handleNotificationRead}
-      />
-    </div>
+    <TechnicianDashboard
+      technician={user}
+      tickets={tickets}
+      onStatusChange={(id, status) => {
+        const ticket = tickets.find(t => t.id === id);
+        if (ticket) {
+          handleTicketUpdate({ ...ticket, status });
+        }
+      }}
+    />
   );
 }
 
