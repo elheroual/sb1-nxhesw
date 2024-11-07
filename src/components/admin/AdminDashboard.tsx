@@ -5,7 +5,9 @@ import { TicketForm } from './TicketForm';
 import { NotificationCenter } from './NotificationCenter';
 import { AuditLogComponent } from './AuditLog';
 import { Ticket, User, AuditLog, Notification, TicketStats } from '../../types';
-import { Plus } from 'lucide-react';
+import { Plus, LogOut } from 'lucide-react';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../lib/firebase';
 
 interface AdminDashboardProps {
   tickets: Ticket[];
@@ -50,6 +52,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setShowTicketForm(true);
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -65,6 +75,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           >
             <Plus className="h-5 w-5 mr-2" />
             New Ticket
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700"
+          >
+            <LogOut className="h-5 w-5 mr-2" />
+            Sign Out
           </button>
         </div>
       </div>

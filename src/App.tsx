@@ -13,7 +13,9 @@ import {
   deleteDoc, 
   doc,
   serverTimestamp,
-  getDoc
+  getDoc,
+  where,
+  Timestamp
 } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -22,6 +24,7 @@ function App() {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [user, setUser] = useState<User | null>(null);
+  const [technicians, setTechnicians] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,15 +46,32 @@ function App() {
   useEffect(() => {
     if (!user) return;
 
+    // Subscribe to technicians collection
+    const techQuery = query(collection(db, 'users'), where('role', '==', 'technician'));
+    const unsubTechnicians = onSnapshot(techQuery, (snapshot) => {
+      const techData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as User[];
+      setTechnicians(techData);
+    });
+
     const unsubTickets = onSnapshot(
       collection(db, 'tickets'),
       (snapshot) => {
-        const ticketData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate().toISOString(),
-          updatedAt: doc.data().updatedAt?.toDate().toISOString(),
-        })) as Ticket[];
+        const ticketData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt instanceof Timestamp ? 
+              data.createdAt.toDate().toISOString() : 
+              new Date().toISOString(),
+            updatedAt: data.updatedAt instanceof Timestamp ? 
+              data.updatedAt.toDate().toISOString() : 
+              new Date().toISOString(),
+          };
+        }) as Ticket[];
         setTickets(ticketData);
       }
     );
@@ -59,11 +79,16 @@ function App() {
     const unsubAuditLogs = onSnapshot(
       collection(db, 'auditLogs'),
       (snapshot) => {
-        const logData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          timestamp: doc.data().timestamp?.toDate().toISOString(),
-        })) as AuditLog[];
+        const logData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            timestamp: data.timestamp instanceof Timestamp ? 
+              data.timestamp.toDate().toISOString() : 
+              new Date().toISOString(),
+          };
+        }) as AuditLog[];
         setAuditLogs(logData);
       }
     );
@@ -71,16 +96,22 @@ function App() {
     const unsubNotifications = onSnapshot(
       collection(db, 'notifications'),
       (snapshot) => {
-        const notifData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate().toISOString(),
-        })) as Notification[];
+        const notifData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt instanceof Timestamp ? 
+              data.createdAt.toDate().toISOString() : 
+              new Date().toISOString(),
+          };
+        }) as Notification[];
         setNotifications(notifData);
       }
     );
 
     return () => {
+      unsubTechnicians();
       unsubTickets();
       unsubAuditLogs();
       unsubNotifications();
@@ -181,7 +212,7 @@ function App() {
       <div className="min-h-screen bg-gray-100">
         <AdminDashboard
           tickets={tickets}
-          technicians={[user]}
+          technicians={technicians}
           auditLogs={auditLogs}
           notifications={notifications}
           stats={calculateStats()}

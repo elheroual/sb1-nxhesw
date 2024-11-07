@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { TicketList } from '../TicketList';
@@ -16,8 +16,12 @@ export const TechnicianDashboard: React.FC<TechnicianDashboardProps> = ({
   tickets,
   onStatusChange,
 }) => {
-  const handleSignOut = () => {
-    signOut(auth);
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const assignedTickets = tickets.filter(ticket => ticket.technician === technician.name);
@@ -36,7 +40,7 @@ export const TechnicianDashboard: React.FC<TechnicianDashboardProps> = ({
             </div>
             <button
               onClick={handleSignOut}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
               <LogOut className="h-5 w-5 mr-2" />
               Sign Out
