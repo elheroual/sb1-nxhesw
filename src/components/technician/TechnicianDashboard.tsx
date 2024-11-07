@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { TicketList } from '../TicketList';
 import { Ticket, TicketStatus, User } from '../../types';
 import { LogOut, User as UserIcon } from 'lucide-react';
+import { TechnicianStats } from './TechnicianStats';
 
 interface TechnicianDashboardProps {
   technician: User;
@@ -25,6 +26,14 @@ export const TechnicianDashboard: React.FC<TechnicianDashboardProps> = ({
   };
 
   const assignedTickets = tickets.filter(ticket => ticket.technician === technician.name);
+
+  const handleTicketStatusChange = (id: string, status: TicketStatus) => {
+    const ticket = assignedTickets.find(t => t.id === id);
+    if (ticket?.status === 'Completed') {
+      return; // Prevent changing status if already completed
+    }
+    onStatusChange(id, status);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -49,12 +58,14 @@ export const TechnicianDashboard: React.FC<TechnicianDashboardProps> = ({
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <TechnicianStats tickets={tickets} technicianName={technician.name} />
+        
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Your Assigned Tickets</h2>
           <TicketList
             tickets={assignedTickets}
-            onStatusChange={onStatusChange}
+            onStatusChange={handleTicketStatusChange}
           />
         </div>
       </div>

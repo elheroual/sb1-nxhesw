@@ -4,6 +4,7 @@ import { TicketTable } from './TicketTable';
 import { TicketForm } from './TicketForm';
 import { NotificationCenter } from './NotificationCenter';
 import { AuditLogComponent } from './AuditLog';
+import { AdminStats } from './AdminStats';
 import { Ticket, User, AuditLog, Notification, TicketStats } from '../../types';
 import { Plus, LogOut } from 'lucide-react';
 import { signOut } from 'firebase/auth';
@@ -86,7 +87,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       </div>
 
-      <DashboardStats stats={stats} />
+      <AdminStats tickets={tickets} technicians={technicians} />
 
       {showTicketForm && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
