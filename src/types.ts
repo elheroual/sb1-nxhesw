@@ -18,6 +18,7 @@ export interface Ticket {
   title: string;
   description: string;
   location: string;
+  coordinates?: [number, number]; // [longitude, latitude]
   technician: string;
   status: TicketStatus;
   priority: Priority;
