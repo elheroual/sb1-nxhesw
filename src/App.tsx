@@ -1,13 +1,73 @@
 import React, { useState, useEffect } from 'react';
 import { AdminDashboard } from './components/admin/AdminDashboard';
-import { mockTickets, mockUsers } from './data';
+import { mockUsers } from './data';
 import { Ticket, AuditLog, Notification, TicketStats } from './types';
+import { db } from './lib/firebase';
+import { 
+  collection, 
+  query, 
+  onSnapshot, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc,
+  serverTimestamp,
+  Timestamp
+} from 'firebase/firestore';
 
 function App() {
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isAdmin] = useState(true); // In production, this would come from auth
+  const [isAdmin] = useState(true);
+
+  useEffect(() => {
+    // Subscribe to tickets collection
+    const unsubTickets = onSnapshot(
+      collection(db, 'tickets'),
+      (snapshot) => {
+        const ticketData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate().toISOString(),
+          updatedAt: doc.data().updatedAt?.toDate().toISOString(),
+        })) as Ticket[];
+        setTickets(ticketData);
+      }
+    );
+
+    // Subscribe to audit logs collection
+    const unsubAuditLogs = onSnapshot(
+      collection(db, 'auditLogs'),
+      (snapshot) => {
+        const logData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          timestamp: doc.data().timestamp?.toDate().toISOString(),
+        })) as AuditLog[];
+        setAuditLogs(logData);
+      }
+    );
+
+    // Subscribe to notifications collection
+    const unsubNotifications = onSnapshot(
+      collection(db, 'notifications'),
+      (snapshot) => {
+        const notifData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate().toISOString(),
+        })) as Notification[];
+        setNotifications(notifData);
+      }
+    );
+
+    return () => {
+      unsubTickets();
+      unsubAuditLogs();
+      unsubNotifications();
+    };
+  }, []);
 
   const calculateStats = (): TicketStats => {
     const today = new Date().toISOString().split('T')[0];
@@ -30,84 +90,77 @@ function App() {
     };
   };
 
-  const addAuditLog = (action: AuditLog['action'], ticketId: string, details: string) => {
-    const newLog: AuditLog = {
-      id: `LOG${Date.now()}`,
+  const addAuditLog = async (action: AuditLog['action'], ticketId: string, details: string) => {
+    await addDoc(collection(db, 'auditLogs'), {
       ticketId,
       action,
       userId: 'U1004',
-      timestamp: new Date().toISOString(),
+      timestamp: serverTimestamp(),
       details,
-    };
-    setAuditLogs(prev => [newLog, ...prev]);
+    });
   };
 
-  const addNotification = (type: Notification['type'], message: string, ticketId: string) => {
-    const newNotification: Notification = {
-      id: `NOTIF${Date.now()}`,
+  const addNotification = async (type: Notification['type'], message: string, ticketId: string) => {
+    await addDoc(collection(db, 'notifications'), {
       type,
       message,
       ticketId,
-      createdAt: new Date().toISOString(),
+      createdAt: serverTimestamp(),
       isRead: false,
-    };
-    setNotifications(prev => [newNotification, ...prev]);
+    });
   };
 
-  const handleTicketCreate = (ticketData: Partial<Ticket>) => {
-    const newTicket: Ticket = {
-      id: `T${Date.now()}`,
+  const handleTicketCreate = async (ticketData: Partial<Ticket>) => {
+    const docRef = await addDoc(collection(db, 'tickets'), {
       ...ticketData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as Ticket;
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
     
-    setTickets(prev => [...prev, newTicket]);
-    addAuditLog('create', newTicket.id, `Ticket "${newTicket.title}" created`);
-    addNotification('assignment', `New ticket assigned to ${newTicket.technician}`, newTicket.id);
+    await addAuditLog('create', docRef.id, `Ticket "${ticketData.title}" created`);
+    await addNotification('assignment', `New ticket assigned to ${ticketData.technician}`, docRef.id);
   };
 
-  const handleTicketUpdate = (updatedTicket: Ticket) => {
-    setTickets(prev => prev.map(ticket => 
-      ticket.id === updatedTicket.id
-        ? { ...updatedTicket, updatedAt: new Date().toISOString() }
-        : ticket
-    ));
-    addAuditLog('update', updatedTicket.id, `Ticket "${updatedTicket.title}" updated`);
+  const handleTicketUpdate = async (updatedTicket: Ticket) => {
+    const ticketRef = doc(db, 'tickets', updatedTicket.id);
+    await updateDoc(ticketRef, {
+      ...updatedTicket,
+      updatedAt: serverTimestamp(),
+    });
+    
+    await addAuditLog('update', updatedTicket.id, `Ticket "${updatedTicket.title}" updated`);
   };
 
-  const handleTicketDelete = (ticket: Ticket) => {
-    setTickets(prev => prev.filter(t => t.id !== ticket.id));
-    addAuditLog('delete', ticket.id, `Ticket "${ticket.title}" deleted`);
+  const handleTicketDelete = async (ticket: Ticket) => {
+    await deleteDoc(doc(db, 'tickets', ticket.id));
+    await addAuditLog('delete', ticket.id, `Ticket "${ticket.title}" deleted`);
   };
 
-  const handleTicketAssign = (ticket: Ticket) => {
-    addAuditLog('assign', ticket.id, `Ticket "${ticket.title}" reassigned`);
-    addNotification('assignment', `Ticket reassigned to ${ticket.technician}`, ticket.id);
+  const handleTicketAssign = async (ticket: Ticket) => {
+    await addAuditLog('assign', ticket.id, `Ticket "${ticket.title}" reassigned`);
+    await addNotification('assignment', `Ticket reassigned to ${ticket.technician}`, ticket.id);
   };
 
-  const handleNotificationRead = (id: string) => {
-    setNotifications(prev => prev.map(notif =>
-      notif.id === id ? { ...notif, isRead: true } : notif
-    ));
+  const handleNotificationRead = async (id: string) => {
+    const notifRef = doc(db, 'notifications', id);
+    await updateDoc(notifRef, { isRead: true });
   };
 
-  // Check for overdue tickets and deadlines
   useEffect(() => {
     const checkDeadlines = () => {
       const today = new Date().toISOString().split('T')[0];
-      tickets.forEach(ticket => {
+      tickets.forEach(async (ticket) => {
         if (ticket.dueDate === today && ticket.status !== 'Completed') {
-          addNotification('deadline', `Ticket "${ticket.title}" is due today`, ticket.id);
+          await addNotification('deadline', `Ticket "${ticket.title}" is due today`, ticket.id);
         }
         if (ticket.dueDate < today && ticket.status !== 'Completed') {
-          addNotification('urgent', `Ticket "${ticket.title}" is overdue`, ticket.id);
+          await addNotification('urgent', `Ticket "${ticket.title}" is overdue`, ticket.id);
         }
       });
     };
 
     checkDeadlines();
-    const interval = setInterval(checkDeadlines, 1000 * 60 * 60); // Check every hour
+    const interval = setInterval(checkDeadlines, 1000 * 60 * 60);
     return () => clearInterval(interval);
   }, [tickets]);
 
